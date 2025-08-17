@@ -22,11 +22,12 @@ import { useIdeas } from '../context/IdeasContext';
 import { lightColors, darkColors } from '../theme/colors';
 import { fonts, spacing } from '../theme/fonts';
 import ToastMessage from '../components/ToastMessage';
+import AICalculationModal from '../components/AICalculationModal';
 
 const IdeaSubmission: React.FC = () => {
+  // ALL HOOKS AT TOP LEVEL
   const { isDarkMode, addIdea } = useIdeas();
   const navigation = useNavigation();
-  const colors = isDarkMode ? darkColors : lightColors;
   
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
@@ -34,9 +35,13 @@ const IdeaSubmission: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [showAIModal, setShowAIModal] = useState(false);
 
   const submitButtonScale = useSharedValue(1);
   const formOpacity = useSharedValue(1);
+
+  // Derived values
+  const colors = isDarkMode ? darkColors : lightColors;
 
   const handleSubmit = async () => {
     // Validation
@@ -64,15 +69,30 @@ const IdeaSubmission: React.FC = () => {
     // Form fade animation
     formOpacity.value = withSpring(0.7);
 
-    // Simulate API call delay
+    // Ensure modal is completely closed before opening
+    setShowAIModal(false);
+    
+    // Wait a bit longer to ensure complete reset
     setTimeout(() => {
-      addIdea({
-        name: name.trim(),
-        tagline: tagline.trim(),
-        description: description.trim(),
-      });
+      setIsSubmitting(false);
+      formOpacity.value = withSpring(1);
+      setShowAIModal(true);
+    }, 1000);
+  };
 
-      // Reset form
+  const handleAIComplete = () => {
+    // Hide modal first
+    setShowAIModal(false);
+    
+    // Add the idea to the context
+    addIdea({
+      name: name.trim(),
+      tagline: tagline.trim(),
+      description: description.trim(),
+    });
+
+    // Reset form with delay to ensure modal is closed
+    setTimeout(() => {
       setName('');
       setTagline('');
       setDescription('');
@@ -80,15 +100,19 @@ const IdeaSubmission: React.FC = () => {
       // Show success toast
       setToastMessage('🎉 Idea submitted successfully!');
       setShowToast(true);
-      
-      setIsSubmitting(false);
-      formOpacity.value = withSpring(1);
 
       // Navigate to ideas list after a delay
       setTimeout(() => {
         navigation.navigate('Ideas' as never);
       }, 2000);
-    }, 1500);
+    }, 100);
+  };
+
+  const handleAICancel = () => {
+    // Properly reset modal state
+    setShowAIModal(false);
+    setIsSubmitting(false);
+    formOpacity.value = withSpring(1);
   };
 
   const submitButtonAnimatedStyle = useAnimatedStyle(() => ({
@@ -226,108 +250,122 @@ const IdeaSubmission: React.FC = () => {
   });
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled"
+    <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <View style={styles.headerIcon}>
-              <Ionicons name="rocket" size={40} color="#ffffff" />
-            </View>
-            <Text style={styles.headerTitle}>Share Your Idea</Text>
-            <Text style={styles.headerSubtitle}>
-              Submit your startup idea and get an instant AI rating!
-            </Text>
-          </View>
-
-          <Animated.View style={[styles.form, formAnimatedStyle]}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Startup Name *</Text>
-              <TextInput
-                style={styles.input}
-                value={name}
-                onChangeText={setName}
-                placeholder="e.g., TechFlow, InnovateCo"
-                placeholderTextColor={colors.textSecondary}
-                maxLength={50}
-                editable={!isSubmitting}
-              />
-              <Text style={styles.characterCount}>{name.length}/50</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <View style={styles.headerIcon}>
+                <Ionicons name="rocket" size={40} color="#ffffff" />
+              </View>
+              <Text style={styles.headerTitle}>Share Your Idea</Text>
+              <Text style={styles.headerSubtitle}>
+                Submit your startup idea and get an instant AI rating!
+              </Text>
             </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Tagline *</Text>
-              <TextInput
-                style={styles.input}
-                value={tagline}
-                onChangeText={setTagline}
-                placeholder="One-line description of your idea"
-                placeholderTextColor={colors.textSecondary}
-                maxLength={100}
-                editable={!isSubmitting}
-              />
-              <Text style={styles.characterCount}>{tagline.length}/100</Text>
-            </View>
+            <Animated.View style={[styles.form, formAnimatedStyle]}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Startup Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="e.g., TechFlow, InnovateCo"
+                  placeholderTextColor={colors.textSecondary}
+                  maxLength={50}
+                  editable={!isSubmitting}
+                />
+                <Text style={styles.characterCount}>{name.length}/50</Text>
+              </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Description *</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={description}
-                onChangeText={setDescription}
-                placeholder="Describe your startup idea, target market, and unique value proposition..."
-                placeholderTextColor={colors.textSecondary}
-                multiline
-                maxLength={500}
-                editable={!isSubmitting}
-              />
-              <Text style={styles.characterCount}>{description.length}/500</Text>
-            </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Tagline *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={tagline}
+                  onChangeText={setTagline}
+                  placeholder="One-line description of your idea"
+                  placeholderTextColor={colors.textSecondary}
+                  maxLength={100}
+                  editable={!isSubmitting}
+                />
+                <Text style={styles.characterCount}>{tagline.length}/100</Text>
+              </View>
 
-            <Animated.View style={submitButtonAnimatedStyle}>
-              <TouchableOpacity
-                style={[
-                  styles.submitButton,
-                  isSubmitting && styles.submitButtonDisabled,
-                ]}
-                onPress={handleSubmit}
-                disabled={isSubmitting}
-                activeOpacity={0.8}
-              >
-                {isSubmitting ? (
-                  <View style={styles.loadingContainer}>
-                    <Ionicons name="analytics" size={24} color="#ffffff" />
-                    <Text style={styles.loadingText}>AI Analyzing...</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.submitButtonText}>Submit Idea 🚀</Text>
-                )}
-              </TouchableOpacity>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Description *</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={description}
+                  onChangeText={setDescription}
+                  placeholder="Describe your startup idea, target market, and unique value proposition..."
+                  placeholderTextColor={colors.textSecondary}
+                  multiline
+                  maxLength={500}
+                  editable={!isSubmitting}
+                />
+                <Text style={styles.characterCount}>{description.length}/500</Text>
+              </View>
+
+              <Animated.View style={submitButtonAnimatedStyle}>
+                <TouchableOpacity
+                  style={[
+                    styles.submitButton,
+                    isSubmitting && styles.submitButtonDisabled,
+                  ]}
+                  onPress={handleSubmit}
+                  disabled={isSubmitting}
+                  activeOpacity={0.8}
+                >
+                  {isSubmitting ? (
+                    <View style={styles.loadingContainer}>
+                      <Ionicons name="rocket" size={24} color="#ffffff" />
+                      <Text style={styles.loadingText}>Preparing Analysis...</Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.submitButtonText}>Submit Idea 🚀</Text>
+                  )}
+                </TouchableOpacity>
+              </Animated.View>
             </Animated.View>
-          </Animated.View>
 
-          <View style={styles.tips}>
-            <Text style={styles.tipsTitle}>💡 Tips for a Great Submission</Text>
-            <Text style={styles.tipText}>• Be specific about your target audience</Text>
-            <Text style={styles.tipText}>• Explain what makes your idea unique</Text>
-            <Text style={styles.tipText}>• Mention the problem you're solving</Text>
-            <Text style={styles.tipText}>• Keep it clear and concise</Text>
+            <View style={styles.tips}>
+              <Text style={styles.tipsTitle}>💡 Tips for a Great Submission</Text>
+              <Text style={styles.tipText}>• Be specific about your target audience</Text>
+              <Text style={styles.tipText}>• Explain what makes your idea unique</Text>
+              <Text style={styles.tipText}>• Mention the problem you're solving</Text>
+              <Text style={styles.tipText}>• Keep it clear and concise</Text>
+              <Text style={styles.tipText}>• AI will analyze market potential, innovation, and viability</Text>
+            </View>
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
 
-      <ToastMessage
-        message={toastMessage}
-        visible={showToast}
-        onHide={() => setShowToast(false)}
-        type="success"
-      />
-    </KeyboardAvoidingView>
+        <ToastMessage
+          message={toastMessage}
+          visible={showToast}
+          onHide={() => setShowToast(false)}
+          type="success"
+        />
+      </KeyboardAvoidingView>
+
+      {/* AI Modal - Add key to force complete remount */}
+      {showAIModal && (
+        <AICalculationModal
+          key={showAIModal ? 'modal-open' : 'modal-closed'}
+          visible={showAIModal}
+          onComplete={handleAIComplete}
+          onCancel={handleAICancel}
+          ideaName={name}
+        />
+      )}
+    </View>
   );
 };
 

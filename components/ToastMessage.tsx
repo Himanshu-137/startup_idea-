@@ -26,11 +26,23 @@ const ToastMessage: React.FC<ToastMessageProps> = ({
   type = 'success',
   duration = 3000,
 }) => {
+  // ALL HOOKS AT TOP LEVEL
   const { isDarkMode } = useIdeas();
-  const colors = isDarkMode ? darkColors : lightColors;
-  
   const translateY = useSharedValue(-100);
   const opacity = useSharedValue(0);
+  
+  // Derived values (not hooks)
+  const colors = isDarkMode ? darkColors : lightColors;
+
+  const hideToast = () => {
+    translateY.value = withSpring(-100, {
+      damping: 15,
+      stiffness: 150,
+    });
+    opacity.value = withTiming(0, { duration: 300 }, () => {
+      runOnJS(onHide)();
+    });
+  };
 
   useEffect(() => {
     if (visible) {
@@ -48,17 +60,7 @@ const ToastMessage: React.FC<ToastMessageProps> = ({
     } else {
       hideToast();
     }
-  }, [visible]);
-
-  const hideToast = () => {
-    translateY.value = withSpring(-100, {
-      damping: 15,
-      stiffness: 150,
-    });
-    opacity.value = withTiming(0, { duration: 300 }, () => {
-      runOnJS(onHide)();
-    });
-  };
+  }, [visible, duration]); // Include dependencies
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],

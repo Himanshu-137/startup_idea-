@@ -5,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   RefreshControl,
-  Dimensions,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -14,7 +13,6 @@ import Animated, {
   FadeIn,
   SlideInDown,
 } from 'react-native-reanimated';
-// import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useIdeas } from '../context/IdeasContext';
 import { lightColors, darkColors } from '../theme/colors';
@@ -22,18 +20,19 @@ import { fonts, spacing } from '../theme/fonts';
 import { Idea } from '../types';
 import LeaderboardCard from '../components/LeaderboardCard';
 
-const { width } = Dimensions.get('window');
-
 const Leaderboard: React.FC = () => {
+  // ALL HOOKS AT TOP LEVEL - NO EXCEPTIONS
   const { isDarkMode, ideas } = useIdeas();
-  const colors = isDarkMode ? darkColors : lightColors;
-  
   const [refreshing, setRefreshing] = useState(false);
-  
   const headerScale = useSharedValue(1);
+  
+  // Derived values (not hooks) - these are safe to compute
+  const colors = isDarkMode ? darkColors : lightColors;
 
-  // Calculate top ideas based on rating + votes (weighted scoring)
+  // Calculate top ideas - this is NOT a hook, just a regular function
   const getTopIdeas = (): Idea[] => {
+    if (!ideas || ideas.length === 0) return [];
+    
     const scoredIdeas = ideas.map(idea => ({
       ...idea,
       totalScore: idea.rating + (idea.voteCount * 2), // Give votes more weight
@@ -59,6 +58,12 @@ const Leaderboard: React.FC = () => {
     transform: [{ scale: headerScale.value }],
   }));
 
+  // Get computed values
+  const topIdeas = getTopIdeas();
+  const totalIdeas = ideas?.length || 0;
+  const totalVotes = ideas?.reduce((sum, idea) => sum + idea.voteCount, 0) || 0;
+  const highestRated = ideas?.length > 0 ? Math.max(...ideas.map(idea => idea.rating)) : 0;
+
   const renderEmptyState = () => (
     <Animated.View entering={FadeIn.delay(300)} style={styles.emptyContainer}>
       <View style={styles.emptyIcon}>
@@ -72,7 +77,7 @@ const Leaderboard: React.FC = () => {
   );
 
   const renderPodium = () => {
-    const topThree = getTopIdeas().slice(0, 3);
+    const topThree = topIdeas.slice(0, 3);
     if (topThree.length === 0) return null;
 
     return (
@@ -105,34 +110,27 @@ const Leaderboard: React.FC = () => {
     );
   };
 
-  const renderStats = () => {
-    const topIdeas = getTopIdeas();
-    const totalIdeas = ideas.length;
-    const totalVotes = ideas.reduce((sum, idea) => sum + idea.voteCount, 0);
-    const highestRated = Math.max(...ideas.map(idea => idea.rating), 0);
-
-    return (
-      <Animated.View entering={FadeIn.delay(400)} style={styles.statsContainer}>
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Ionicons name="bulb" size={24} color={colors.primary} />
-            <Text style={styles.statNumber}>{totalIdeas}</Text>
-            <Text style={styles.statLabel}>Total Ideas</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Ionicons name="heart" size={24} color={colors.error} />
-            <Text style={styles.statNumber}>{totalVotes}</Text>
-            <Text style={styles.statLabel}>Total Votes</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Ionicons name="star" size={24} color={colors.warning} />
-            <Text style={styles.statNumber}>{highestRated}</Text>
-            <Text style={styles.statLabel}>Top Rating</Text>
-          </View>
+  const renderStats = () => (
+    <Animated.View entering={FadeIn.delay(400)} style={styles.statsContainer}>
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Ionicons name="bulb" size={24} color={colors.primary} />
+          <Text style={styles.statNumber}>{totalIdeas}</Text>
+          <Text style={styles.statLabel}>Total Ideas</Text>
         </View>
-      </Animated.View>
-    );
-  };
+        <View style={styles.statCard}>
+          <Ionicons name="heart" size={24} color={colors.error} />
+          <Text style={styles.statNumber}>{totalVotes}</Text>
+          <Text style={styles.statLabel}>Total Votes</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Ionicons name="star" size={24} color={colors.warning} />
+          <Text style={styles.statNumber}>{highestRated}</Text>
+          <Text style={styles.statLabel}>Top Rating</Text>
+        </View>
+      </View>
+    </Animated.View>
+  );
 
   const styles = StyleSheet.create({
     container: {
@@ -183,7 +181,7 @@ const Leaderboard: React.FC = () => {
     },
     podiumRow: {
       flexDirection: 'row',
-      justifyContent: 'space-around',
+      justifyContent: 'space-between',
       alignItems: 'flex-end',
       width: '100%',
     },
@@ -284,8 +282,6 @@ const Leaderboard: React.FC = () => {
       lineHeight: 24,
     },
   });
-
-  const topIdeas = getTopIdeas();
 
   return (
     <View style={styles.container}>

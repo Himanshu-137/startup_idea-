@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 // import { LinearGradient } from 'expo-linear-gradient';
@@ -15,13 +15,15 @@ interface LeaderboardCardProps {
 }
 
 const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ idea, position, index }) => {
+  // ALL HOOKS AT TOP LEVEL
   const { isDarkMode } = useIdeas();
-  const colors = isDarkMode ? darkColors : lightColors;
-  
   const scale = useSharedValue(0);
   const translateX = useSharedValue(50);
+  
+  // Derived values (not hooks)
+  const colors = isDarkMode ? darkColors : lightColors;
 
-  React.useEffect(() => {
+  useEffect(() => {
     const delay = index * 200;
     scale.value = withSpring(1, {
       damping: 15,
@@ -33,7 +35,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ idea, position, index
       stiffness: 100,
       delay,
     });
-  }, [index]);
+  }, [index, scale, translateX]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -60,7 +62,8 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ idea, position, index
     }
   };
 
-  const [gradientStart, gradientEnd] = getRankColors(position);
+  const [gradientStart] = getRankColors(position);
+  const totalScore = idea.rating + idea.voteCount * 2; // Custom scoring logic
 
   const styles = StyleSheet.create({
     container: {
@@ -140,8 +143,6 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ idea, position, index
       fontWeight: fonts.weights.medium,
     },
   });
-
-  const totalScore = idea.rating + idea.voteCount * 2; // Custom scoring logic
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>

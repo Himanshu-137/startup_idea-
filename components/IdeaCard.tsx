@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -20,24 +20,28 @@ interface IdeaCardProps {
 }
 
 const IdeaCard: React.FC<IdeaCardProps> = ({ idea, index }) => {
+  // ALL HOOKS MUST BE CALLED AT THE TOP LEVEL
   const { isDarkMode, voteForIdea, votes } = useIdeas();
-  const colors = isDarkMode ? darkColors : lightColors;
-  
   const [isExpanded, setIsExpanded] = useState(false);
-  const hasVoted = votes[idea.id] || false;
   
+  // Animated values
   const expandedHeight = useSharedValue(0);
   const cardScale = useSharedValue(1);
   const voteScale = useSharedValue(1);
 
-  React.useEffect(() => {
+  // Derived values (not hooks)
+  const colors = isDarkMode ? darkColors : lightColors;
+  const hasVoted = votes[idea.id] || false;
+
+  // Effects
+  useEffect(() => {
     // Staggered entrance animation
     cardScale.value = withSpring(1, {
       damping: 15,
       stiffness: 100,
       delay: index * 100,
     });
-  }, [index]);
+  }, [index, cardScale]);
 
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);

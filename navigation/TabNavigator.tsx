@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
@@ -27,10 +27,11 @@ interface AnimatedTabIconProps {
 }
 
 const AnimatedTabIcon: React.FC<AnimatedTabIconProps> = ({ focused, name, color, size }) => {
+  // ALL HOOKS AT TOP LEVEL
   const scale = useSharedValue(1);
   const rotation = useSharedValue(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (focused) {
       scale.value = withSpring(1.2, { damping: 15, stiffness: 200 });
       rotation.value = withSpring(360, { damping: 15, stiffness: 100 });
@@ -38,7 +39,7 @@ const AnimatedTabIcon: React.FC<AnimatedTabIconProps> = ({ focused, name, color,
       scale.value = withSpring(1, { damping: 15, stiffness: 200 });
       rotation.value = withSpring(0, { damping: 15, stiffness: 100 });
     }
-  }, [focused]);
+  }, [focused, scale, rotation]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
@@ -60,17 +61,20 @@ interface ThemeToggleProps {
 }
 
 const ThemeToggle: React.FC<ThemeToggleProps> = ({ isDarkMode, onToggle }) => {
-  const colors = isDarkMode ? darkColors : lightColors;
+  // ALL HOOKS AT TOP LEVEL
   const translateX = useSharedValue(isDarkMode ? 22 : 0);
   const backgroundColor = useSharedValue(isDarkMode ? darkColors.primary : lightColors.border);
 
-  React.useEffect(() => {
+  // Derived values
+  const colors = isDarkMode ? darkColors : lightColors;
+
+  useEffect(() => {
     translateX.value = withSpring(isDarkMode ? 22 : 0, {
       damping: 15,
       stiffness: 200,
     });
     backgroundColor.value = isDarkMode ? darkColors.primary : lightColors.border;
-  }, [isDarkMode]);
+  }, [isDarkMode, translateX]);
 
   const animatedToggleStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
@@ -130,7 +134,10 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ isDarkMode, onToggle }) => {
 };
 
 const TabNavigator: React.FC = () => {
+  // ALL HOOKS AT TOP LEVEL
   const { isDarkMode, toggleTheme } = useIdeas();
+  
+  // Derived values
   const colors = isDarkMode ? darkColors : lightColors;
 
   return (

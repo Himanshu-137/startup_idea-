@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useIdeas } from '../context/IdeasContext';
@@ -11,17 +11,19 @@ interface RatingBadgeProps {
 }
 
 const RatingBadge: React.FC<RatingBadgeProps> = ({ rating, size = 'medium' }) => {
+  // ALL HOOKS AT TOP LEVEL
   const { isDarkMode } = useIdeas();
-  const colors = isDarkMode ? darkColors : lightColors;
-  
   const scale = useSharedValue(0);
   
-  React.useEffect(() => {
+  // Derived values (not hooks)
+  const colors = isDarkMode ? darkColors : lightColors;
+
+  useEffect(() => {
     scale.value = withSpring(1, {
       damping: 12,
       stiffness: 100,
     });
-  }, []);
+  }, [scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
