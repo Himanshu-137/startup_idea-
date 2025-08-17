@@ -1,11 +1,11 @@
-<img width="492" height="597" alt="image" src="https://github.com/user-attachments/assets/b84662f1-3b22-430c-b208-029fcddea085" /># 🚀 Startup Ideas App
+# 🚀 Startup Ideas App
 
 A React Native mobile app where users can submit startup ideas, vote for their favorites, and see fake AI-powered ratings. Built with Expo featuring smooth animations and dark/light themes.
 
 ## 📱 Download APK
 
 <div align="center">
-  <img src="qr-code.png" width="200" alt="QR Code to Download APK" />
+ <img width="492" height="597" alt="image" src="https://github.com/user-attachments/assets/b84662f1-3b22-430c-b208-029fcddea085" />
   
   **👆 Scan this QR code to download the APK file**
   
