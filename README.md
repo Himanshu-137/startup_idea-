@@ -16,9 +16,9 @@ A React Native mobile app where users can submit startup ideas, vote for their f
 ## 📱 App Screenshots
 
 <div align="center">
- ![3203bbd5-da2d-45a2-bd61-a4638cd67fc0](https://github.com/user-attachments/assets/7c30edbb-d39a-4b24-a8ef-1c9e0c49f37f)
 
-  <img src="screenshot2.png" width="250" alt="Ideas List - After Vote" />
+  <img src="![WhatsApp Image 2025-08-17 at 17 59 06 (1)](https://github.com/user-attachments/assets/f1fea06a-da62-407e-97ff-a8f622d07c82)
+" width="250" alt="Ideas List - After Vote" />
   <img src="screenshot3.png" width="250" alt="Leaderboard" />
 </div>
 
