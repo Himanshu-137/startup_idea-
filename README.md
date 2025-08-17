@@ -9,7 +9,7 @@ A React Native mobile app where users can submit startup ideas, vote for their f
   
   **👆 Scan this QR code to download the APK file**
   
- <img width="492" height="597" alt="image" src="https://github.com/user-attachments/assets/c16582b3-0a43-4de0-9fdf-4655d0986b38" />
+
 
 </div>
 
