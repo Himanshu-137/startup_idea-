@@ -9,9 +9,7 @@ export default {
       resizeMode: "contain",
       backgroundColor: "#6366f1"
     },
-    assetBundlePatterns: [
-      "**/*"
-    ],
+    assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.yourcompany.startupideas"
@@ -24,6 +22,13 @@ export default {
     },
     web: {
       bundler: "metro"
+    },
+
+    // ✅ Correct placement of extra
+    extra: {
+      eas: {
+        projectId: "6d0290ec-0d8f-449c-961c-1cbed0083437"
+      }
     }
   }
 };
